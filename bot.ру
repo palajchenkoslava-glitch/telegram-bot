@@ -1,8 +1,10 @@
 import telebot
 import json
 import os
+from flask import Flask
+from threading import Thread
 
-# ВСТАВЬ СЮДА НОВЫЙ ТОКЕН ОТ BOTFATHER (после Revoke)
+# ВСТАВЬ СЮДА СВОЙ НОВЫЙ ТОКЕН ОТ BOTFATHER
 TOKEN = '9263476588:AAGZNVV6iKQIYAvQL96uOMafnjdqT5zO6Bc' 
 bot = telebot.TeleBot(TOKEN)
 
@@ -22,7 +24,6 @@ def save_bank(current_bank):
     with open(DATA_FILE, 'w') as f:
         json.dump({'bank': current_bank}, f)
 
-# Текущее состояние
 BANK = load_bank()
 CURRENT_BET = 0
 CURRENT_ODDS = 0
@@ -41,7 +42,6 @@ def show_bank(message):
 def place_bet(message):
     global BANK, CURRENT_BET, CURRENT_ODDS, CURRENT_MATCH
     try:
-        # maxsplit=3 позволяет захватить название матча с пробелами
         parts = message.text.split(maxsplit=3) 
         if len(parts) < 3:
             raise ValueError
@@ -50,17 +50,15 @@ def place_bet(message):
         odds = float(parts[2])
         match_name = parts[3] if len(parts) > 3 else "Неизвестный матч"
         
-        # Проверка лимита 3%
         limit = BANK * 0.03
         if stake > limit:
-            bot.send_message(message.chat.id, f"⚠️ ВНИМАНИЕ! Ставка {stake} ₽ превышает наш лимит в 3% (максимум {limit:.0f} ₽). Подумай еще раз!")
+            bot.send_message(message.chat.id, f"⚠️ ВНИМАНИЕ! Ставка {stake} ₽ превышает наш лимит в 3% (максимум {limit:.0f} ₽).")
             return
 
         if stake > BANK:
             bot.send_message(message.chat.id, "❌ Ошибка: Недостаточно средств в банке!")
             return
 
-        # Списываем деньги и запоминаем ставку
         BANK -= stake
         CURRENT_BET = stake
         CURRENT_ODDS = odds
@@ -95,10 +93,27 @@ def lose(message):
     if CURRENT_BET == 0:
         bot.send_message(message.chat.id, "У тебя нет активных ставок.")
         return
-    # Деньги уже списаны при ставке
     bot.send_message(message.chat.id, f"😔 Ставка на {CURRENT_BET} ₽ ({CURRENT_MATCH}) проиграла.\nБанк остается {BANK:.2f} ₽")
     CURRENT_BET = 0
     CURRENT_MATCH = "Нет"
 
-print("Бот версии 3.0 запущен. Умный журнал активен...")
+# --- ХАК ДЛЯ RENDER (Чтобы сервер не выключал бота) ---
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run():
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+keep_alive()
+# -----------------------------------------------------
+
+print("Бот версии 3.0 запущен в облаке!")
 bot.polling(none_stop=True)
