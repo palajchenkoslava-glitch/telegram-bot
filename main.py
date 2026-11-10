@@ -5,7 +5,7 @@ from flask import Flask
 from threading import Thread
 
 # ВСТАВЬ СЮДА СВОЙ ТОКЕН
-TOKEN = '9263476588:AAGZNVV6iKQIYAvQL96uOMafnjdqT5zO6Bc' 
+TOKEN = '9263476588:AAEQgNMPI3AElcxGC5V49fU_rqITPv8dQMo' 
 bot = telebot.TeleBot(TOKEN)
 
 DATA_FILE = 'bank_data.json'
