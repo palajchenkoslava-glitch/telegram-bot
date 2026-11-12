@@ -7,7 +7,7 @@ from flask import Flask
 from threading import Thread
 
 # ВСТАВЬ СЮДА ТОКЕН ОТ BOTFATHER (тот, что ты получил после /revoke)
-TOKEN = '9263476588:AAEQgNMPI3AElcxGC5V49fU_rqITPv8dQMo' 
+TOKEN = '' 
 bot = telebot.TeleBot(TOKEN)
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
